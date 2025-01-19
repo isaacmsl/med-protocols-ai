@@ -1,5 +1,6 @@
-# bora-ia
-Repositório para o desenvolvimento  da API que irá gerenciar a IA da aplicação bora-pagar.
+# med-protocols-ai
+
+Repositório para o desenvolvimento  da API que irá gerenciar a IA da aplicação med-protocols-ai.
 
 # Quero rodar
 
