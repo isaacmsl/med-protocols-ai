@@ -2,7 +2,7 @@
     chroma_service.py = implements rules to access the database
 """
 
-__author__ = "Isaac Lourenço, Felipe Holanda"
+__author__ = "Isaac Lourenço, Felipe Holanda, Gustavo Freitas"
 
 
 import os
@@ -32,7 +32,7 @@ def load_pdfs(pdfs: Iterable[str]) -> list[Document]:
             pages = loader.load()
             for page in pages:
                 page.metadata["title"] = os.path.basename(pdf_file).removesuffix(".pdf")
-                
+
             docs.extend(pages)
 
         return docs
@@ -45,15 +45,20 @@ def split_docs(docs: list[Document]) -> list[Document]:
     :return: list of split documents
     """
     if docs:
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1000, chunk_overlap=200
+        )
         splits = text_splitter.split_documents(docs)
 
         return splits
 
 
 class ChromaService:
-    def __init__(self, chroma_repository: ChromaRepository = ChromaRepository(),
-                 knowledge_directory: str = KNOWLEDGE_PDF_DIR):
+    def __init__(
+        self,
+        chroma_repository: ChromaRepository = ChromaRepository(),
+        knowledge_directory: str = KNOWLEDGE_PDF_DIR,
+    ):
         self._chroma_repository = chroma_repository
         self._knowledge_directory = knowledge_directory
 
@@ -64,48 +69,48 @@ class ChromaService:
         """
 
         files: list[str] = os.listdir(self._knowledge_directory)
-        pdfs_paths: list[str] = [os.path.join(
-                        self._knowledge_directory, pdf_file) for pdf_file in files if pdf_file.lower().endswith('.pdf')]
+        pdfs_paths: list[str] = [
+            os.path.join(self._knowledge_directory, pdf_file)
+            for pdf_file in files
+            if pdf_file.lower().endswith(".pdf")
+        ]
 
         return pdfs_paths
 
     def _compare_files(self) -> tuple[set[str], set[str]]:
         """
-            gets mismatched files between the Chroma database and the directory and returns them as two sets
+        gets mismatched files between the Chroma database and the directory and returns them as two sets
 
-            :return: a tuple where the first member is the set of files only in the directory, and
-            the second is the set of files only in the database
+        :return: a tuple where the first member is the set of files only in the directory, and
+        the second is the set of files only in the database
         """
 
         paths: set[str] = set(self._get_pdfs_paths_from_dir())
 
         sources: set[str] = set(self._chroma_repository.get_sources())
-        
+
         directory_only = paths.difference(sources)
         database_only = sources.difference(paths)
 
         return directory_only, database_only
 
-
     def _update_knowledge(self):
         """
-            add or remove RAG knowledge based on knowledge folder new or removed files
-            if the file exists only at chromadb, it was removed
-            if the file exists only at knowledge folder, it is a new one
+        add or remove RAG knowledge based on knowledge folder new or removed files
+        if the file exists only at chromadb, it was removed
+        if the file exists only at knowledge folder, it is a new one
         """
         directory_only, database_only = self._compare_files()
 
         self._chroma_repository.add_docs(split_docs(load_pdfs(directory_only)))
         self._chroma_repository.remove_docs(database_only)
 
-
     def load_retriever(self) -> VectorStoreRetriever:
         """
-            :return: chromadb as a retriever to the RAG
+        :return: chromadb as a retriever to the RAG
         """
         self._update_knowledge()
 
         retriever = self._chroma_repository.as_retriever()
 
         return retriever
-

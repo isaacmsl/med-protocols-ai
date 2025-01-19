@@ -2,7 +2,7 @@
     ChromaRepository.py: handles all access to the chroma database
 """
 
-__author__ = "Isaac Lourenço, Felipe Holanda"
+__author__ = "Isaac Lourenço, Felipe Holanda, Gustavo Freitas"
 
 import os
 from langchain_chroma import Chroma
@@ -20,10 +20,15 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 
 class ChromaRepository:
-    def __init__(self, persist_directory: str = CHROMA_PERSIST_DIR, embedding_model: str = CHROMA_EMBEDDING_MODEL):
+    def __init__(
+        self,
+        persist_directory: str = CHROMA_PERSIST_DIR,
+        embedding_model: str = CHROMA_EMBEDDING_MODEL,
+    ):
         embedding_function = OpenAIEmbeddings(model=embedding_model)
-        self._db = Chroma(persist_directory=persist_directory, embedding_function=embedding_function)
-
+        self._db = Chroma(
+            persist_directory=persist_directory, embedding_function=embedding_function
+        )
 
     def add_docs(self, docs: list[Document]):
         """
@@ -32,7 +37,6 @@ class ChromaRepository:
         """
         if docs:
             self._db.add_documents(documents=docs)
-
 
     def remove_docs(self, sources: Iterable[str]):
         """
@@ -44,13 +48,11 @@ class ChromaRepository:
                 docs = self._db.get(where={"source": source})
                 self._db.delete(ids=docs["ids"])
 
-
     def as_retriever(self) -> VectorStoreRetriever:
         """
         :return: chromadb as a vector store retrievier important to the RAG chain
         """
         return self._db.as_retriever()
-
 
     def get_sources(self) -> list[str]:
         """
