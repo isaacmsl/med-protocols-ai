@@ -6,6 +6,7 @@ __author__ = "Isaac Lourenço, Felipe Holanda, Gustavo Freitas"
 
 
 import os
+import chromadb
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_core.documents import Document
 from dotenv import load_dotenv
@@ -17,6 +18,8 @@ from repositories.chroma_repository import ChromaRepository
 load_dotenv()
 
 KNOWLEDGE_PDF_DIR = os.getenv("KNOWLEDGE_PDF_DIR")
+CHROMA_HOST = os.getenv("CHROMA_HOST")
+CHROMA_PORT = os.getenv("CHROMA_PORT")
 
 
 def load_pdfs(pdfs: Iterable[str]) -> list[Document]:
@@ -56,10 +59,12 @@ def split_docs(docs: list[Document]) -> list[Document]:
 class ChromaService:
     def __init__(
         self,
-        chroma_repository: ChromaRepository = ChromaRepository(),
         knowledge_directory: str = KNOWLEDGE_PDF_DIR,
     ):
-        self._chroma_repository = chroma_repository
+        self._chroma_repository = ChromaRepository(
+            host=CHROMA_HOST,
+            port=CHROMA_PORT,
+        )
         self._knowledge_directory = knowledge_directory
 
     def _get_pdfs_paths_from_dir(self) -> list[str]:
