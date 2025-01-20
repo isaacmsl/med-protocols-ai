@@ -1,0 +1,37 @@
+name: Run Tests
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12 # Escolha a versão do Python desejada
+
+      # Step 3: Create virtual environment
+      - name: Create virtual environment
+        run: python -m venv .venv
+
+      # Step 4: Activate virtual environment and install dependencies
+      - name: Install dependencies
+        run: |
+          source .venv/bin/activate
+          pip install -r requirements.txt
+
+      # Step 5: Run tests
+      - name: Run tests
+        run: |
+          source .venv/bin/activate
+          python run_tests.py
