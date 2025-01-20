@@ -5,6 +5,7 @@
 __author__ = "Isaac Lourenço, Felipe Holanda, Gustavo Freitas"
 
 import os
+import chromadb
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from langchain_core.vectorstores import VectorStoreRetriever
@@ -22,12 +23,17 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 class ChromaRepository:
     def __init__(
         self,
-        persist_directory: str = CHROMA_PERSIST_DIR,
+        host: str,
+        port: int,
+        collection_name: str = "pcdts",
         embedding_model: str = CHROMA_EMBEDDING_MODEL,
     ):
         embedding_function = OpenAIEmbeddings(model=embedding_model)
+        client = chromadb.HttpClient(host, port)
         self._db = Chroma(
-            persist_directory=persist_directory, embedding_function=embedding_function
+            client=client,
+            collection_name=collection_name,
+            embedding_function=embedding_function,
         )
 
     def add_docs(self, docs: list[Document]):
