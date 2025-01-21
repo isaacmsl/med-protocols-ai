@@ -9,8 +9,11 @@ instructions = """Avalia a resposta do aluno com base na prova conceitual por si
 
 
 class Grade(BaseModel):
-    score: bool = Field(
-        description="Boolean que indica se a resposta do aluno é precisa em relação a resposta esperada."
+    score: float = Field(
+        description="O quanto a resposta do aluno é precisa em relação a resposta esperada entre 0 e 1.",
+        ge=0.00,
+        le=1.00,
+        multiple_of=0.01
     )
 
 
